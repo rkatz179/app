@@ -3,7 +3,7 @@ models:
     external_links:
       -  mysql:db
     volumes:
-      - ./InternetScaleAppsProject/febay:/app
+      - ./febay:/app
     ports:
       - "8001:8000"
-    command: bash -c "python /app/manage.py makemigrations" && "python /app/manage.py migrate" && "python /app/manage.py loaddata /app/db.json" && "mod_wsgi-express start-server --working-directory /app --reload-on-changes /app/febay/wsgi.py"
+    command: bash -c "python /app/manage.py makemigrations && python /app/manage.py migrate && python /app/manage.py loaddata /app/db.json && mod_wsgi-express start-server --working-directory /app --reload-on-changes /app/febay/wsgi.py"

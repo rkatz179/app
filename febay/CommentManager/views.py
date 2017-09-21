@@ -38,7 +38,7 @@ def createComment(request):
 		except Exception as e:
 			return JsonResponse({'response': str(e)})
 	else:
-		return JsonResponse({'response': 'Not a POST method'})
+		return JsonResponse({'status': 'error', 'response': 'Not a POST method'})
 
 def getComment(request, pk):
 	if request.method == 'GET':
@@ -56,9 +56,9 @@ def getComment(request, pk):
 			except ObjectDoesNotExist:
 				return JsonResponse({'status': 'error', 'response': 'no object found'})
 		else:
-			return JsonResponse({'response': 'Comment not found'})
+			return JsonResponse({'status': 'error', 'response': 'Comment not found'})
 	else:
-		return JsonResponse({'response': 'Not a GET method'})
+		return JsonResponse({'status': 'error', 'response': 'Not a GET method'})
 
 @csrf_exempt
 def updateComment(request, pk):
@@ -72,13 +72,14 @@ def updateComment(request, pk):
 				comment = Comment.objects.get(id=id)
 				comment.message = newMessage
 				comment.save()
-				return JsonResponse({'response': 'Comment successfully updated'})
+				response = {'newMessage': comment.message, 'user': comment.user.username, 'item': comment.item.title}
+				return JsonResponse({'status': 'success', 'response': response})
 			except:
-				return JsonResponse({'response': 'Comment was not updated'})
+				return JsonResponse({'status': 'error', 'response': 'Comment was not updated'})
 		else:
-			return JsonResponse({'response': 'Comment not found'})
+			return JsonResponse({'status': 'error', 'response': 'Comment not found'})
 	else:
-		return JsonResponse({'response': 'Not a POST method'})
+		return JsonResponse({'status': 'error', 'response': 'Not a POST method'})
 
 @csrf_exempt
 def deleteComment(request, pk):
@@ -87,13 +88,13 @@ def deleteComment(request, pk):
 		if id:
 			try:
 				response = Comment.objects.get(id=id).delete()
-				return JsonResponse({'response': 'Successfully deleted message'})
+				return JsonResponse({'status': 'success', 'response': 'Successfully deleted message'})
 			except ObjectDoesNotExist:
-				return JsonResponse({'response': 'Comment was not found'})
+				return JsonResponse({'status': 'error', 'response': 'Comment was not found'})
 		else:
-			return JsonResponse({'response': 'Error finding comment'})
+			return JsonResponse({'status': 'error', 'response': 'Comment id does not exist'})
 	else:
-		return JsonResponse({'response': 'Not a POST method'})
+		return JsonResponse({'status': 'error', 'response': 'Not a POST method'})
 
 @csrf_exempt
 def getCommentList(request, pk):
@@ -103,6 +104,8 @@ def getCommentList(request, pk):
 		if id:
 			try:
 				comments = Comment.objects.all().filter(item=id)
+				if not comments:
+					return JsonResponse({'status': 'error', 'response': 'There are no comments associated with this id.'})
 				for comment in comments:
 					c = {
 						'message': comment.message,
@@ -110,11 +113,11 @@ def getCommentList(request, pk):
 						'date_posted': comment.date_posted
 					}
 					comment_list.append(c.copy())
-				return JsonResponse({'response': comment_list})
+				return JsonResponse({'status': 'success', 'response': comment_list})
 			except Exception as e:
-				return JsonResponse({'response': str(e)})
+				return JsonResponse({'status': 'error', 'response': str(e)})
 		else:
-			return JsonResponse({'response': 'Error finding comments related to item id'})
+			return JsonResponse({'status': 'error', 'response': 'Error finding comments related to item id'})
 	else:
-		return JsonResponse({'response': 'Not a GET method'})
+		return JsonResponse({'status': 'error', 'response': 'Not a GET method'})
 

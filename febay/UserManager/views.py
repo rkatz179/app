@@ -15,6 +15,7 @@ from .models import User, customer
 from django.contrib.auth.decorators import user_passes_test
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.core.exceptions import ObjectDoesNotExist
 
 @csrf_exempt
 def register_user(request):
@@ -29,9 +30,9 @@ def register_user(request):
 			phone_number = request.POST.get('phone_number'),
 			password = request.POST.get('password')
 			)
-		return JsonResponse({'Response':{'first name': user.first_name,'last name': user.last_name, 'username': user.username, 'email': user.email, 'state':user.state, 'city':user.city, 'phone number': user.phone_number,'id':user.id}})
+		return JsonResponse({'status': 'success', 'Response':{'first name': user.first_name,'last name': user.last_name, 'username': user.username, 'email': user.email, 'state':user.state, 'city':user.city, 'phone number': user.phone_number,'id':user.id}})
 	else:
-		return JsonResponse({'Response': 'Could not register user'})
+		return JsonResponse({'status': 'error', 'Response': 'Could not register user'})
 
 @csrf_exempt
 def get_user(request,id):
@@ -42,14 +43,17 @@ def get_user(request,id):
 			response[user.username] = {'first name': user.first_name,'last name': user.last_name, 
 			'username': user.username, 'email': user.email, 'state':user.state, 
 			'city':user.city, 'phone number': user.phone_number,'id':user.id}
-		except():
-			pass
+			response['status'] = 'success'
+		except ObjectDoesNotExist:
+			response['status'] = 'error: user does not exist'
 	return JsonResponse(response)
 
 @csrf_exempt
 def get_users(request):
     users = customer.objects.all().values('username','first_name', 'last_name')  # or simply .values() to get all fields
     users_list = list(users)  # important: convert the QuerySet to a list object
+    status = {'status': 'success'}
+    users_list.append(status)
     return JsonResponse(users_list, safe=False)
 
 # @csrf_exempt
@@ -109,7 +113,7 @@ def update_user_email(request):
 			'city':user.city, 'phone number': user.phone_number,'id':user.id}
 		status = {'status': 'success'}
 	else:
-		status = {'status': 'failure'}
+		status = {'status': 'error updating user email'}
 	return JsonResponse({'status': status, 'response':response})
     	
 

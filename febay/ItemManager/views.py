@@ -18,6 +18,7 @@ def getItemList(request):
     for item in items:
         response[item.pk] = {'title':item.title, 'description':item.description, 'price':item.price, 'date-posted': item.date_posted,
                              'category':item.category, 'owner':item.owner.username}
+    response['status'] = 'success'
     return JsonResponse(response)
 
 
@@ -28,6 +29,7 @@ def getItem(request, id):
         item = Item.objects.get(id = id)
         response[item.pk] = {'title': item.title, 'description': item.description, 'price':item.price, 'date-posted': item.date_posted,
                              'category': item.category, 'owner': item.owner.username}
+        response['status'] = 'success'
     except ObjectDoesNotExist:
                 return JsonResponse({'status': 'error', 'response': 'no object found'})
     return JsonResponse(response)
@@ -51,8 +53,9 @@ def create(request):
             item.save()
             response['item-added'] = {'title':item.title, 'description':item.description, 'price':item.price, 'date-posted': item.date_posted,
                              'category':item.category, 'owner':item.owner.username}
+            response['status'] = 'success'
         except():
-            response['error'] = "Could not add item"
+            response['status'] = "error: Could not add item"
 
     return JsonResponse(response)
 
@@ -73,8 +76,9 @@ def update(request, id):
             item.save()
             response['item-updated'] = {'title': item.title, 'description': item.description, 'price': item.price,
                                   'date-posted': item.date_posted, 'category': item.category, 'owner': item.owner.username}
+            response['status'] = 'success'
         except():
-            response['error'] = 'Could not update item'
+            response['status'] = 'error: Could not update item'
     return JsonResponse(response)
 
 @csrf_exempt
@@ -86,7 +90,8 @@ def delete(request, id):
             title = item.title
             item.delete()
             response['item-deleted'] = {'title': title}
+            response['status'] = 'success'
         except():
-            response['error'] = 'Could not delete item'
+            response['status'] = 'error: Could not delete item'
 
     return JsonResponse(response)
